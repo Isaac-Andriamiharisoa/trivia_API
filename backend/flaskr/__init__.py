@@ -47,11 +47,14 @@ def create_app(test_config=None):
         categories = Category.query.all()
         formated_categories = {
             category.id: category.type for category in categories}
-        return jsonify({
-            'success': True,
-            'categories': formated_categories,
-            'total_categories': len(formated_categories)
-        })
+        if len(formated_categories) > 0:
+            return jsonify({
+                'success': True,
+                'categories': formated_categories,
+                'total_categories': len(formated_categories)
+            })
+        else:
+            abort(404)
 
     """
     @TODO:
@@ -73,12 +76,15 @@ def create_app(test_config=None):
         formated_categories = {
             category.id: category.type for category in categories}
 
-        return jsonify({
-            'success': True,
-            'questions': current_questions,
-            'categories': formated_categories,
-            'totalQuestions': len(questions)
-        })
+        if len(current_questions) > 0:
+            return jsonify({
+                'success': True,
+                'questions': current_questions,
+                'categories': formated_categories,
+                'totalQuestions': len(questions)
+            })
+        else:
+            abort(404)
     """
     @TODO:
     Create an endpoint to DELETE question using a question ID.
@@ -118,13 +124,13 @@ def create_app(test_config=None):
     def add_question():
         body = request.get_json()
 
-        if not ('question' in body and 'answer' in body and 'difficulty' in body and 'category' in body):
-            abort(422)
+        new_question = body.get('question')
+        new_answer = body.get('answer', '')
+        new_difficulty = body.get('difficulty', '')
+        new_category = body.get('category', '')
 
-        new_question = body.get('question', None)
-        new_answer = body.get('answer', None)
-        new_difficulty = body.get('difficulty', None)
-        new_category = body.get('category', None)
+        if ((new_question == '') or (new_answer == '') or (new_difficulty == '') or (new_category == '')):
+            abort(422)
 
         try:
             question = Question(question=new_question, answer=new_answer,
@@ -136,7 +142,7 @@ def create_app(test_config=None):
                 'created': question.id
             })
         except:
-            abort(422)
+            abort(405)
     """
     @TODO:
     Create a POST endpoint to get questions based on a search term.
@@ -230,6 +236,14 @@ def create_app(test_config=None):
     Create error handlers for all expected errors
     including 404 and 422.
     """
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            'success': False,
+            'error': 400,
+            'message': 'Bad request'
+        })
+
     @app.errorhandler(404)
     def not_found(error):
         return jsonify({
