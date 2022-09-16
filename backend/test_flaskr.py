@@ -113,17 +113,13 @@ class TriviaTestCase(unittest.TestCase):
                          1, total_question_after_adding)
         self.client().delete('/questions/{}'.format(question_id))
 
-    def test_422_unprocessable_add_request(self):
-        question = {
-            'question': '',
-            'answer': '',
-        }
-        res = self.client().post('/questions', json=question)
+    def test_404_add_page_not_found(self):
+        res = self.client().post('/question')
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 422)
+        self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'Unprocessable')
+        self.assertEqual(data['message'], 'Not found')
 
     def test_search_questions(self):
         searchTerm = {
@@ -176,9 +172,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], True)
 
     def test_404_quizzes(self):
-        question = {'previous_questions': [],
-                    'quiz_category': {'id': 10, 'type': 'test'}}
-        res = self.client().post('/quizzes', json=question)
+        res = self.client().post('/quiz')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
